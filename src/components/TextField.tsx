@@ -16,21 +16,17 @@ export const TextField: React.FC<TextFieldProps> = ({
   placeholder,
 }) => {
   const inputClasses = {
-    default: 'border border-gray-200 focus:border-purple-500',
+    default: 'border border-purple-200 focus:border-purple-500',
     active: 'border border-purple-500',
     error: 'border border-red-500',
   };
 
   return (
     <div className="flex flex-col gap-1">
-      {label && (
-        <label className="text-sm text-gray-600">
-          {label}
-        </label>
-      )}
+      {label && <label className="text-sm text-purple-950">{label}</label>}
       <input
         type="text"
-        className={`px-3 py-2 rounded-md outline-none transition-colors ${inputClasses[status]}`}
+        className={`px-3 py-2 rounded-md outline-none transition-colors bg-white ${inputClasses[status]}`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
