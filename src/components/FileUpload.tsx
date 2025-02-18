@@ -4,18 +4,14 @@ import { uploadFile, deleteFile } from '../services/api';
 
 interface FileUploadProps {
   label: string;
-  onChange: (urls: string[]) => void;
+  value: string | null;
+  fileId: string | null;
+  onChange: (fileId: string | null, url: string | null) => void;
 }
 
-interface UploadedFile {
-  id: string;
-  url: string;
-}
-
-export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({ label, value, fileId, onChange }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
   const handleFile = async (file: File) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -23,8 +19,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
     try {
       setIsUploading(true);
       const response = await uploadFile(file);
-      setUploadedFile(response);
-      onChange([response.url]);
+      onChange(response.id, response.url);
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
@@ -33,12 +28,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
   };
 
   const handleDelete = async () => {
-    if (!uploadedFile) return;
+    if (!fileId) return;
 
     try {
-      await deleteFile(uploadedFile.id);
-      setUploadedFile(null);
-      onChange([]);
+      await deleteFile(fileId);
+      onChange(null, null);
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -69,7 +63,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
         }}
         onDrop={handleDrop}
       >
-        {!uploadedFile ? (
+        {!value ? (
           <div className="text-center">
             <label className="cursor-pointer">
               <p className="text-purple-600 hover:text-purple-800 transition-colors">
@@ -91,7 +85,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
         ) : (
           <div className="flex items-center gap-4">
             <div className="flex flex-row gap-4 items-center">
-              <p className="text-sm text-purple-950">{uploadedFile.url.split('/').pop()}</p>
+              <p className="text-sm text-purple-950">{value.split('/').pop()}</p>
               <DeleteIcon onClick={handleDelete} />
             </div>
           </div>
