@@ -25,8 +25,8 @@ export const RangeInput: React.FC<RangeInputProps> = ({ label, value, onChange, 
       <label className="text-purple-950 text-base">{label}</label>
       <div className="relative mt-2 mb-8">
         <div className="absolute bottom-4 w-full flex items-center px-1 justify-between">
-          <span className="text-purple-950 text-sm">{min}</span>
-          <span className="text-purple-950 text-sm">{max}</span>
+          <p className="text-purple-950 text-sm">{min}</p>
+          <p className="text-purple-950 text-sm">{max}</p>
         </div>
         <input
           ref={rangeRef}

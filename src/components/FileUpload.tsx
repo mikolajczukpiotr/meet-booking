@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { DeleteIcon } from './DeleteIcon';
-import { AddIcon } from './AddIcon';
 import { uploadFile, deleteFile } from '../services/api';
 
 interface FileUploadProps {
@@ -16,7 +15,7 @@ interface UploadedFile {
 export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
 
   const handleFile = async (file: File) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -24,9 +23,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
     try {
       setIsUploading(true);
       const response = await uploadFile(file);
-      const newFiles = [...uploadedFiles, response];
-      setUploadedFiles(newFiles);
-      onChange(newFiles.map((file) => file.url));
+      setUploadedFile(response);
+      onChange([response.url]);
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
@@ -34,12 +32,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!uploadedFile) return;
+
     try {
-      await deleteFile(id);
-      const newFiles = uploadedFiles.filter((file) => file.id !== id);
-      setUploadedFiles(newFiles);
-      onChange(newFiles.map((file) => file.url));
+      await deleteFile(uploadedFile.id);
+      setUploadedFile(null);
+      onChange([]);
     } catch (error) {
       console.error('Delete failed:', error);
     }
@@ -48,22 +47,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    Array.from(e.dataTransfer.files).forEach((file) => {
-      if (file.type.startsWith('image/')) {
-        handleFile(file);
-      }
-    });
-  };
-
-  const handleAdd = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) handleFile(file);
-    };
-    input.click();
+    const file = e.dataTransfer.files[0];
+    if (file?.type.startsWith('image/')) {
+      handleFile(file);
+    }
   };
 
   return (
@@ -82,13 +69,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
         }}
         onDrop={handleDrop}
       >
-        {uploadedFiles.length === 0 ? (
+        {!uploadedFile ? (
           <div className="text-center">
             <label className="cursor-pointer">
-              <span className="text-purple-600 hover:text-purple-800 transition-colors">
+              <p className="text-purple-600 hover:text-purple-800 transition-colors">
                 Upload a file
-              </span>
-              <span className="text-gray-500 ml-2">or drag and drop here</span>
+              </p>
+              <p className="text-gray-500 ml-2">or drag and drop here</p>
               <input
                 type="file"
                 className="hidden"
@@ -102,24 +89,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({ label, onChange }) => {
             </label>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-4">
-            {uploadedFiles.map((file) => (
-              <div key={file.id} className="relative group">
-                <img
-                  src={file.url}
-                  alt="Uploaded file"
-                  className="h-20 w-20 object-cover rounded-lg border border-purple-100"
-                />
-                <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <DeleteIcon onClick={() => handleDelete(file.id)} />
-                </div>
-              </div>
-            ))}
-            <div
-              className="flex items-center justify-center h-20 w-20 border border-purple-100 rounded-lg cursor-pointer hover:border-purple-200 transition-colors"
-              onClick={handleAdd}
-            >
-              <AddIcon />
+          <div className="flex items-center gap-4">
+            <div className="flex flex-row gap-4 items-center">
+              <p className="text-sm text-purple-950">{uploadedFile.url.split('/').pop()}</p>
+              <DeleteIcon onClick={handleDelete} />
             </div>
           </div>
         )}
