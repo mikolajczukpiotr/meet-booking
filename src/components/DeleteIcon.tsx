@@ -7,7 +7,7 @@ interface DeleteIconProps {
 export const DeleteIcon: React.FC<DeleteIconProps> = ({ onClick }) => {
   return (
     <button
-      className={`w-5 h-5 transition-colors text-[#ED4545] hover:text-purple-950 `}
+      className={`w-5 h-5 transition-colors hover:text-red-600 text-purple-950 `}
       onClick={onClick}
       aria-label="Delete"
     >
