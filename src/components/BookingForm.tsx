@@ -3,122 +3,127 @@ import { TextField } from './TextField';
 import { RangeInput } from './RangeInput';
 import { FileUpload } from './FileUpload';
 import { Button } from './Button';
-
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  age: string;
-  photo: string;
-}
-
-interface FormErrors {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  age?: string;
-  photo?: string;
-}
-
-const INITIAL_FORM_DATA: FormData = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  age: '8',
-  photo: '',
-};
+import { Calendar } from './Calendar';
+import { submitBooking } from '../services/bookingService';
+import { BookingFormData } from '../types/form';
+import { INITIAL_FORM_DATA } from '../types/form';
+import { FORM_FIELDS } from '../constants/formFields';
 
 export const BookingForm: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [formData, setFormData] = useState<BookingFormData>(INITIAL_FORM_DATA);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitAttempted, setIsSubmitAttempted] = useState(false);
 
-  const validateField = (field: keyof FormData, value: string): string | undefined => {
-    switch (field) {
-      case 'firstName':
-      case 'lastName':
-        return !value.trim()
-          ? `${field === 'firstName' ? 'First' : 'Last'} name is required`
-          : value.length < 2
-            ? `${field === 'firstName' ? 'First' : 'Last'} name must be at least 2 characters long`
-            : undefined;
-      case 'email':
-        return !value.trim()
-          ? 'Email is required'
-          : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-            ? 'Please enter a valid email address'
-            : undefined;
-      case 'age': {
-        const age = parseInt(value);
-        return isNaN(age) || age < 8 || age > 100 ? 'Age must be between 8 and 100' : undefined;
-      }
-      case 'photo':
-        return !value ? 'Photo is required' : undefined;
-    }
+  const validateField = (name: keyof BookingFormData, value: string | null) => {
+    const field = FORM_FIELDS.find((f) => f.name === name);
+    return field?.validate(value || '');
   };
 
-  const handleChange = (field: keyof FormData) => (value: string) => {
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
-
+  const handleChange = (field: keyof BookingFormData) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (isSubmitAttempted) {
       const error = validateField(field, value);
-      setErrors((prev) => ({ ...prev, [field]: error }));
+      setErrors((prev) => ({ ...prev, [field]: error || '' }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleDateTimeChange = (date: string | null, time?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      date: date || '',
+      ...(time && { time }),
+    }));
+
+    if (isSubmitAttempted) {
+      setErrors((prev) => ({
+        ...prev,
+        date: validateField('date', date) || '',
+        ...(time && { time: !time ? 'Please select a time' : '' }),
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newErrors: FormErrors = {};
-    let hasErrors = false;
-
-    (Object.keys(formData) as Array<keyof FormData>).forEach((field) => {
-      const error = validateField(field, formData[field]);
-      if (error) {
-        newErrors[field] = error;
-        hasErrors = true;
-      }
-    });
+    const newErrors = Object.fromEntries(
+      FORM_FIELDS.map((field) => [
+        field.name,
+        validateField(field.name, formData[field.name]?.toString() || null) || '',
+      ])
+    );
 
     setErrors(newErrors);
     setIsSubmitAttempted(true);
 
-    if (!hasErrors) {
-      console.log('Form submitted:', formData);
-      setFormData(INITIAL_FORM_DATA);
-      setIsSubmitAttempted(false);
+    if (!Object.values(newErrors).some(Boolean)) {
+      try {
+        const formDataToSend = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value) formDataToSend.append(key, value);
+        });
+
+        const result = await submitBooking(formDataToSend);
+        setFormData(INITIAL_FORM_DATA);
+        setIsSubmitAttempted(false);
+        setErrors({});
+        alert(result.message);
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Failed to submit form. Please try again.');
+      }
     }
   };
 
-  const renderField = (field: keyof FormData, label: string) => {
-    const showError = isSubmitAttempted && errors[field];
+  const renderField = ({ name, label }: (typeof FORM_FIELDS)[0]) => {
+    const showError = isSubmitAttempted && errors[name];
+
+    if (name === 'age') {
+      return (
+        <RangeInput
+          label={label}
+          value={formData[name]}
+          onChange={handleChange(name)}
+          min="8"
+          max="100"
+        />
+      );
+    }
+
+    if (name === 'photoUrl') {
+      return (
+        <FileUpload
+          label={label}
+          value={formData.photoUrl}
+          fileId={formData.photoId}
+          onChange={(fileId, url) => {
+            setFormData((prev) => ({
+              ...prev,
+              photoUrl: url,
+              photoId: fileId,
+            }));
+          }}
+        />
+      );
+    }
+
+    if (name === 'date') {
+      return (
+        <Calendar
+          value={formData.date}
+          selectedTime={formData.time}
+          onChange={handleDateTimeChange}
+        />
+      );
+    }
+
     return (
-      <div>
-        {field === 'age' ? (
-          <RangeInput
-            label={label}
-            value={formData[field]}
-            onChange={handleChange(field)}
-            min="8"
-            max="100"
-          />
-        ) : field === 'photo' ? (
-          <FileUpload label={label} onChange={(urls) => handleChange('photo')(urls[0] || '')} />
-        ) : (
-          <TextField
-            label={label}
-            value={formData[field]}
-            onChange={handleChange(field)}
-            status={showError ? 'error' : 'default'}
-          />
-        )}
-        {showError && (
-          <p className="mt-1 text-sm text-red-500" role="alert">
-            {errors[field]}
-          </p>
-        )}
-      </div>
+      <TextField
+        label={label}
+        value={formData[name] || ''}
+        onChange={handleChange(name)}
+        status={showError ? 'error' : 'default'}
+      />
     );
   };
 
@@ -127,17 +132,30 @@ export const BookingForm: React.FC = () => {
       <div>
         <h1 className="text-purple-950 text-2xl font-semibold mb-8">Personal info</h1>
         <div className="space-y-6">
-          {renderField('firstName', 'First Name')}
-          {renderField('lastName', 'Last Name')}
-          {renderField('email', 'Email')}
-          {renderField('age', 'Age')}
-          {renderField('photo', 'Photo')}
+          {FORM_FIELDS.slice(0, 5).map((field) => (
+            <div key={field.name}>
+              {renderField(field)}
+              {isSubmitAttempted && errors[field.name] && (
+                <p className="mt-1 text-sm text-red-500" role="alert">
+                  {errors[field.name]}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       </div>
       <div>
         <h2 className="text-purple-950 text-2xl font-semibold mb-8">Your workout</h2>
+        <div className="space-y-6">
+          {renderField(FORM_FIELDS[5])}
+          {isSubmitAttempted && (errors.date || errors.time) && (
+            <p className="mt-1 text-sm text-red-500" role="alert">
+              {errors.date || errors.time}
+            </p>
+          )}
+        </div>
       </div>
-      <Button type="submit" disabled={isSubmitAttempted && Object.keys(errors).length > 0}>
+      <Button type="submit" disabled={isSubmitAttempted && Object.values(errors).some(Boolean)}>
         Send Application
       </Button>
     </form>
