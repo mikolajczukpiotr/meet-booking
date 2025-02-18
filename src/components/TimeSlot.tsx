@@ -6,11 +6,7 @@ interface TimeSlotProps {
   onClick?: () => void;
 }
 
-export const TimeSlot: React.FC<TimeSlotProps> = ({
-  time,
-  variant = 'default',
-  onClick,
-}) => {
+export const TimeSlot: React.FC<TimeSlotProps> = ({ time, variant = 'default', onClick }) => {
   const variantClasses = {
     default: 'border border-gray-200 hover:border-purple-500',
     selected: 'border border-purple-500 bg-purple-50',
