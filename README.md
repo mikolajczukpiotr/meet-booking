@@ -1,4 +1,4 @@
-# Let's Workout - Booking Form
+# Meet Booking - Booking Form
 
 A React-based workout booking form implementation with holiday integration and form validation.
 
@@ -42,6 +42,16 @@ npm install
 npm run dev
 ```
 
+## Deployment
+
+The project is configured for deployment on GitHub Pages. To deploy:
+
+1. Make sure you have committed all your changes
+2. Run `npm run deploy`
+3. The site will be deployed to `https://[your-github-username].github.io/meet-booking/`
+
+Note: Before deploying, ensure that your environment variables are properly set up in your deployment environment.
+
 ## Development
 
 The form implementation follows these principles:
@@ -50,4 +60,3 @@ The form implementation follows these principles:
 - Modular component structure
 - Custom validation logic
 - Responsive design
-
