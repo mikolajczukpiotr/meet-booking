@@ -5,7 +5,7 @@ interface UploadResponse {
 
 export const uploadFile = async (file: File): Promise<UploadResponse> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Create object URL for the file
   const url = URL.createObjectURL(file);
@@ -19,5 +19,6 @@ export const uploadFile = async (file: File): Promise<UploadResponse> => {
 
 export const deleteFile = async (id: string): Promise<void> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
+  if (!id) return;
+  await new Promise((resolve) => setTimeout(resolve, 500));
 };
