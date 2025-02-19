@@ -31,21 +31,20 @@ export const BookingForm: React.FC = () => {
     setFormData((prev) => ({
       ...prev,
       date: date || '',
-      ...(time && { time }),
+      ...(time !== undefined && { time }),
     }));
 
-    if (isSubmitAttempted) {
-      setErrors((prev) => ({
-        ...prev,
-        date: validateField('date', date) || '',
-        ...(time && { time: !time ? 'Please select a time' : '' }),
-      }));
-    }
+    // Clear date/time related errors when user makes a selection
+    setErrors((prev) => ({
+      ...prev,
+      date: '',
+      ...(time !== undefined && { time: '' }),
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     const newErrors = Object.fromEntries(
       FORM_FIELDS.map((field) => [
         field.name,
@@ -102,6 +101,7 @@ export const BookingForm: React.FC = () => {
               photoUrl: url,
               photoId: fileId,
             }));
+            setErrors((prev) => ({ ...prev, photoUrl: '' }));
           }}
         />
       );

@@ -86,7 +86,7 @@ const useHolidays = () => {
           'https://api.api-ninjas.com/v1/holidays?country=PL&year=2025',
           {
             headers: {
-              'X-Api-Key': '8DX8eEe67njS1lbThFsdSw==rQQNpQ8PYbPZBjrx',
+              'X-Api-Key': import.meta.env.VITE_HOLIDAYS_API_KEY,
             },
           }
         );

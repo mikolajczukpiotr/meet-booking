@@ -32,4 +32,9 @@ export const FORM_FIELDS: FormField[] = [
     label: 'Date',
     validate: (value) => validateRequired(value, 'select a date'),
   },
+  {
+    name: 'time',
+    label: 'Time',
+    validate: (value) => validateRequired(value, 'select a time'),
+  },
 ];
