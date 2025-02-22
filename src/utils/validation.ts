@@ -16,4 +16,4 @@ export const validateAge = (value: string) => {
 };
 
 export const validateRequired = (value: string | null, fieldName: string) =>
-  !value ? `Please ${fieldName.toLowerCase().startsWith('select') ? fieldName.toLowerCase() : `enter your ${fieldName.toLowerCase()}`}` : undefined;
+  !value ? (fieldName.startsWith('Please') ? fieldName : `Please enter your ${fieldName.toLowerCase()}`) : undefined;
