@@ -25,16 +25,16 @@ export const FORM_FIELDS: FormField[] = [
   {
     name: 'photoUrl',
     label: 'Photo',
-    validate: (value) => validateRequired(value, 'upload a photo'),
+    validate: (value) => validateRequired(value, 'Please upload a photo'),
   },
   {
     name: 'date',
     label: 'Date',
-    validate: (value) => validateRequired(value, 'select a date'),
+    validate: (value) => validateRequired(value, 'Please select a date'),
   },
   {
     name: 'time',
     label: 'Time',
-    validate: (value) => validateRequired(value, 'select a time'),
+    validate: (value) => validateRequired(value, 'Please select a time'),
   },
 ];

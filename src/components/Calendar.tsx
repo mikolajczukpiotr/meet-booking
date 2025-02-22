@@ -57,7 +57,7 @@ const TimeSlots: React.FC<{
 }> = ({ selectedTime, onTimeSelect }) => (
   <div className="space-y-2">
     <h3 className="text-sm text-purple-950">Time</h3>
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-wrap md:flex-col gap-2">
       {TIME_SLOTS.map((time) => (
         <button
           type="button"
@@ -82,14 +82,11 @@ const useHolidays = () => {
   useLayoutEffect(() => {
     const fetchHolidays = async () => {
       try {
-        const response = await fetch(
-          'https://api.api-ninjas.com/v1/holidays?country=PL&year=2025',
-          {
-            headers: {
-              'X-Api-Key': import.meta.env.VITE_HOLIDAYS_API_KEY,
-            },
-          }
-        );
+        const response = await fetch('https://api.api-ninjas.com/v1/holidays?country=PL', {
+          headers: {
+            'X-Api-Key': import.meta.env.VITE_HOLIDAYS_API_KEY,
+          },
+        });
         const data = await response.json();
         setHolidays(data);
       } catch (error) {
@@ -154,7 +151,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onChange, value, selectedTim
 
     const dateString = date.toISOString().split('T')[0];
     setSelectedDate(dateString);
-    onChange(dateString, timeSlot);
+    onChange(dateString, timeSlot || undefined);
 
     const message = getObservanceMessage(date, holidays);
     setObservanceMessage(message);
@@ -179,12 +176,16 @@ export const Calendar: React.FC<CalendarProps> = ({ onChange, value, selectedTim
   })();
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col md:flex-row gap-6">
       <div className="rounded-2xl bg-white p-4 border-purple-300 border-1">
         <CalendarHeader
           currentDate={currentDate}
-          onPrevMonth={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}
-          onNextMonth={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))}
+          onPrevMonth={() =>
+            setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))
+          }
+          onNextMonth={() =>
+            setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))
+          }
         />
 
         <div className="grid grid-cols-7 gap-1">
@@ -213,10 +214,10 @@ export const Calendar: React.FC<CalendarProps> = ({ onChange, value, selectedTim
                   isDisabledDate || isWeekend || isPastDate
                     ? 'text-gray-300'
                     : isSelected
-                    ? 'text-white'
-                    : hasObservance
-                    ? 'text-purple-600'
-                    : 'text-purple-950'
+                      ? 'text-white'
+                      : hasObservance
+                        ? 'text-purple-600'
+                        : 'text-purple-950'
                 }`}
               >
                 {isSelected && (
