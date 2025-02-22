@@ -151,7 +151,6 @@ export const Calendar: React.FC<CalendarProps> = ({ onChange, value, selectedTim
 
     const dateString = date.toISOString().split('T')[0];
     setSelectedDate(dateString);
-    // Always pass the current timeSlot to maintain consistency
     onChange(dateString, timeSlot || undefined);
 
     const message = getObservanceMessage(date, holidays);
